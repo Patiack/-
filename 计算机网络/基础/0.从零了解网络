@@ -4,7 +4,7 @@
     ----参考：https://mp.weixin.qq.com/s?__biz=MzIwOTcyNjA3Mw==&mid=2247485954&idx=1&sn=d5acdb06bc9be84fb5d3df9467b72fe3&chksm=976e3514a019bc0241ca8cac7717c2a7dda9c8ed13c57002b73078309199961972153fbcc1d1&scene=21#wechat_redirect
 
 2、网络组成部分
-    传输介质：分为有线和无线。有线为：铜缆、光纤等。
+    传输介质：分为有线和无线。有线为：双绞线、铜缆、光纤等。
     计算机：客户端【个人PC、手机等】，服务器。
     网络设备：光猫（家用小型路由器）、交换机、路由器、防火墙等。
     
