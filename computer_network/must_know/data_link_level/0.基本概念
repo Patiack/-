@@ -1,0 +1,34 @@
+一、数据链路层使用两种截然不同的链路层信道 
+  1、第一种类型：广播信道。常用在局域网（local Area Network，LAN）、无线LAN、卫星网和混合光纤（Hybrid Fiber-coaxial Cable，HFC）接入网中。
+      由于是广播信道，所以所以主机使用相同的通信信道，需要使用媒体访问协议来协调和避免“碰撞”。-------多路访问协议（multiple access Protocol）
+  2、第二种类型：点对点信道。常用在拨号上网服务中。
+ 
+二、数据链路层使用的协议
+  以太网Ethernet
+  802.11无线LAN（简称WiFi）
+  令牌环
+  PPP（point-to-point Protocol，PPP）点对点协议
+  HDLC（High-level Data Link Control）高级数据链路控制。已基本淘汰。
+  ATM也被任务是链路层协议
+  ------数据链路层协议较好的数据单元成为：帧。
+  
+三、数据链路层解决的问题
+  封装成帧
+  差错检测
+  重传---可靠交付
+  流量控制
+  随机接入
+
+注意点：链路层的一个重要特点是数据包在路径的不同链路上可能由不同的链路层协议承载。
+
+链路层的主要组成部件：网络适配器
+
+四、多路访问协议的划分
+  ·信道划分协议（channel partitioning Protocol）
+    ·时分多路复用
+    ·频分多路复用
+  ·随机接入协议（random access Protocol）
+    ·ALOHA协议
+    ·载波监听多路访问（CSMA）
+  ·轮流协议（taking-turns Protocol）
+  
