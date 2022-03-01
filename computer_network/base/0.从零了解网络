@@ -13,7 +13,7 @@
     OSI（Open System Interconnect）：开放式系统互联。该体系结构标准定义了网络互联的七层框架（物理层、数据链路层、网络层、传输层、会话层、表示层和应用层）。
     TCP/IP： TCP/IP体系结构定义了四层框架（数据链路层、网络层、传输层、应用层）。
     两者的比较如下图：
-    ![image](https://github.com/Tounclesade/-/blob/main/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/Images/net-base.png)
+    ![image](https://github.com/Tounclesade/-/blob/main/computer_network/Images/net-base.png
     
     
 物理层: 
