@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+  <rect width="400" height="400" fill="#e8a25c"/>
+  <rect x="55" y="60" width="290" height="200" rx="12" fill="#fdf3e0"/>
+  <rect x="95" y="105" width="80" height="110" rx="6" fill="#b4551f"/>
+  <rect x="200" y="130" width="100" height="85" rx="6" fill="#6c8f5a"/>
+  <text x="200" y="320" font-size="22" text-anchor="middle" fill="#fff" font-family="sans-serif">签收现场照片 2</text>
+  <text x="200" y="352" font-size="15" text-anchor="middle" fill="#fff3df" font-family="sans-serif">货物完好清点 · 村头小卖部</text>
+</svg>

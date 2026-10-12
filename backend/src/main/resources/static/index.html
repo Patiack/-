@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>乡村到村送 · 子女端</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header>
+  <div class="logo">🚚 乡村到村送 · 子女端</div>
+  <a href="index.html" class="on">子女端</a>
+  <a href="station.html">站点端</a>
+  <a href="admin.html">运营端</a>
+  <span id="who" style="font-size:13px"></span>
+</header>
+<main>
+  <!-- 登录 -->
+  <div class="card" id="loginCard">
+    <h3>登录（MVP mock）</h3>
+    <div class="row">
+      <div><label>手机号</label><input id="phone" value="13800000001"></div>
+      <div style="display:flex;align-items:flex-end"><button onclick="login()">登 录</button></div>
+    </div>
+    <p class="hint">演示账号：13800000001 张三(深圳子女) ｜ 13900000002 李大爷(村民) ｜ 13700000003 王婶(村站长) ｜ 13600000004 运营</p>
+  </div>
+
+  <div id="app" style="display:none">
+    <!-- 下单 -->
+    <div class="card">
+      <h3>给老家寄东西 / 帮爸妈代购送进村</h3>
+      <div class="row">
+        <div><label>方式</label>
+          <select id="type">
+            <option value="SEND">代寄（我从城里寄出）</option>
+            <option value="AGENT">代购（县城买好送进村）</option>
+          </select>
+        </div>
+        <div><label>收件老人姓名</label><input id="rName" value="李大爷"></div>
+      </div>
+      <div class="row">
+        <div><label>老人电话</label><input id="rPhone" value="13900000002"></div>
+        <div><label>送到村站点</label><select id="village"></select></div>
+      </div>
+      <label>物品描述</label><input id="desc" value="面粉10斤 + 钙片2瓶">
+      <div class="row">
+        <div><label>重量(kg)</label><input id="weight" type="number" value="6.5"></div>
+        <div><label>代购货款(元, 代购时填)</label><input id="goods" type="number" value="89"></div>
+      </div>
+      <div class="row">
+        <div><label>到村运费(元)</label><input id="freight" type="number" value="6"></div>
+        <div><label>备注(给派送员看)</label><input id="remark" value="老人耳背, 到村大声说"></div>
+      </div>
+      <button onclick="createOrder()">提交订单</button>
+      <button class="ghost" onclick="loadOrders()">查看我的订单 ↓</button>
+    </div>
+
+    <!-- 订单列表 -->
+    <div class="card">
+      <h3>我的订单（点击查看全程轨迹 + 签收照片）</h3>
+      <div id="orders">暂无</div>
+    </div>
+
+    <!-- 送达朋友圈 -->
+    <div class="card">
+      <h3>📸 送达朋友圈（爸妈签收回执实时回传）</h3>
+      <div id="feed">暂无</div>
+      <button class="ghost mini" onclick="loadFeed()">刷新</button>
+    </div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modal" onclick="this.classList.remove('show')">
+  <div class="modal" onclick="event.stopPropagation()" id="modalBody"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+const S = {CREATED:'已下单',PICKED:'已揽收',AT_COUNTY:'到县域集散',AT_TOWN:'到乡镇hub',
+  AT_VILLAGE:'到村·派送中',SIGNED:'已签收',VILLAGE_RECEIVED:'村站已收寄',DISPATCHED:'已发往全国'};
+const T = {SEND:'代寄',AGENT:'代购',AGRI:'农产品上行'};
+let user = JSON.parse(localStorage.getItem('user')||'null');
+
+function toast(m, err){ const t=document.getElementById('toast'); t.textContent=m;
+  t.className='show'+(err?' err':''); setTimeout(()=>t.className='',2200); }
+async function api(path, opt){
+  const r = await fetch(path, Object.assign({headers:{'Content-Type':'application/json'}}, opt));
+  const j = await r.json();
+  if(j.code!==0){ toast(j.msg, true); throw new Error(j.msg); }
+  return j.data;
+}
+async function login(){
+  const u = await api('/api/auth/login',{method:'POST',body:JSON.stringify({phone:phone.value})});
+  localStorage.setItem('user', JSON.stringify(u)); user=u; boot(); toast('欢迎, '+u.name);
+}
+function logout(){ localStorage.removeItem('user'); location.reload(); }
+
+async function boot(){
+  if(!user) return;
+  app.style.display='block'; loginCard.style.display='none';
+  who.innerHTML = `${user.name}（${{'SENDER':'城里子女','VILLAGER':'村民','STATION_MASTER':'站长','OPS':'运营'}[user.role]}）<button class="ghost mini" onclick="logout()" style="margin-left:8px">退出</button>`;
+  const sts = await api('/api/stations?type=VILLAGE');
+  village.innerHTML = sts.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  loadOrders(); loadFeed();
+}
+
+async function createOrder(){
+  const body = { type: type.value, userId: user.id,
+    senderName: user.name, senderPhone: user.phone,
+    receiverName: rName.value, receiverPhone: rPhone.value,
+    receiverStationId: Number(village.value),
+    itemDesc: desc.value, weight: Number(weight.value),
+    goodsAmount: Number(goods.value||0), freight: Number(freight.value||0), remark: remark.value };
+  const o = await api('/api/orders',{method:'POST',body:JSON.stringify(body)});
+  toast(`下单成功 ${o.orderNo}，运单号 WB${o.id}（去站点端演示派送）`);
+  loadOrders();
+}
+
+async function loadOrders(){
+  const list = await api('/api/orders?userId='+user.id);
+  orders.innerHTML = list.length? list.map(o=>`
+    <div class="order" onclick="openDetail(${o.id})">
+      <div class="tt">${T[o.type]} · ${o.itemDesc||''} <span class="badge">${S[o.status]||o.status}</span></div>
+      <div class="no">${o.orderNo} → ${o.receiverName} ｜ 运费 ¥${o.freight} ｜ ${o.createdAt||''}</div>
+    </div>`).join('') : '暂无';
+}
+
+async function openDetail(id){
+  const d = await api('/api/orders/'+id);
+  const o = d.order;
+  const imgs = (d.pods[0]&&d.pods[0].photos)? JSON.parse(d.pods[0].photos):[];
+  modalBody.innerHTML = `
+    <h3 style="margin-bottom:6px">${T[o.type]} ${o.orderNo}</h3>
+    <p style="font-size:13px;color:#888">${o.senderName} → ${o.receiverName} ｜ ${d.receiverStationName||''}</p>
+    <p style="font-size:13px;margin:6px 0">📦 ${o.itemDesc||''} ｜ ${o.weight||0}kg ｜ 货款¥${o.goodsAmount} 运费¥${o.freight}
+      ${o.remark?`<br>📝 备注: ${o.remark}`:''}</p>
+    <ul class="timeline">${d.traces.map(t=>`
+      <li><b>${S[t.action]||t.action}</b> <span class="tm">${t.createdAt||''} ${t.stationName?'· '+t.stationName:''}</span>
+        <div>${t.description}</div></li>`).join('')}</ul>
+    ${d.pods.length?`<div class="pod-card"><b>✅ 签收回执</b>（${d.pods[0].signedName||''}）
+      ${d.pods[0].relay_text||d.pods[0].relayText?`<div class="relay">"${d.pods[0].relayText}"</div>`:''}
+      <div>${imgs.map(u=>`<img class="pod-img" src="${u}">`).join('')}</div></div>`:''}
+    <button class="ghost" onclick="document.getElementById('modal').classList.remove('show')">关闭</button>`;
+  modal.classList.add('show');
+}
+
+async function loadFeed(){
+  const list = await api('/api/pods?userId='+user.id);
+  feed.innerHTML = list.length? list.map(x=>{
+    const imgs = x.pod.photos? JSON.parse(x.pod.photos):[];
+    return `<div class="pod-card">
+      <b>${x.order.receiverName} 已签收</b> <span class="tm" style="font-size:12px;color:#999">${x.pod.createdAt||''}</span>
+      <div style="font-size:13px;margin:4px 0">${x.order.itemDesc||''} → ${x.pod.signedName||'本人'} 签收</div>
+      ${x.pod.relayText?`<div class="relay">"${x.pod.relayText}"</div>`:''}
+      <div>${imgs.map(u=>`<img class="pod-img" src="${u}">`).join('')}</div>
+    </div>`;}).join('') : '还没有签收回执，等站点端上传签收照片后来看';
+}
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+package com.runos.rurallog.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.runos.rurallog.entity.Trace;
+
+public interface TraceMapper extends BaseMapper<Trace> {}

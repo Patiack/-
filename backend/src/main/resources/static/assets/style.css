@@ -1,0 +1,81 @@
+/* 乡村情感物流 MVP — 共享样式（乡土暖色系） */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  background: #f6f1e7; color: #333; min-height: 100vh;
+}
+header {
+  background: linear-gradient(135deg, #e8722a, #d4552b); color: #fff;
+  padding: 14px 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+header .logo { font-size: 18px; font-weight: 700; margin-right: auto; }
+header a { color: #ffe8d6; text-decoration: none; font-size: 14px; padding: 4px 10px; border-radius: 6px; }
+header a.on, header a:hover { background: rgba(255,255,255,.2); color: #fff; }
+main { max-width: 960px; margin: 20px auto; padding: 0 16px 60px; }
+
+.card {
+  background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.card h3 { font-size: 15px; margin-bottom: 12px; color: #b4551f; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.stat { background: #fff7ef; border-radius: 10px; padding: 14px; text-align: center; }
+.stat b { font-size: 26px; color: #d4552b; display: block; }
+.stat span { font-size: 12px; color: #997a5f; }
+
+label { display: block; font-size: 13px; color: #7a6a55; margin: 10px 0 4px; }
+input, select, textarea {
+  width: 100%; padding: 9px 10px; border: 1px solid #e2d6c3; border-radius: 8px;
+  font-size: 14px; background: #fffdf9;
+}
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+button {
+  background: #e8722a; color: #fff; border: 0; border-radius: 8px;
+  padding: 10px 18px; font-size: 14px; cursor: pointer; margin-top: 12px;
+}
+button:hover { background: #d4552b; }
+button.ghost { background: #fff; color: #b4551f; border: 1px solid #eec49a; }
+button.mini { padding: 5px 10px; font-size: 12px; margin-top: 0; }
+
+.badge { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #eee; color: #555; }
+.badge.CHECKED { background: #e3f4e3; color: #2c7a2c; }
+.badge.TRANSIT { background: #fff2dc; color: #b47b1f; }
+.badge.CREATED2 { background: #e8eefc; color: #3a5bbf; }
+
+.order { border: 1px solid #eee1cd; border-radius: 10px; padding: 12px; margin-bottom: 10px; cursor: pointer; }
+.order:hover { background: #fffaf2; }
+.order .no { font-size: 12px; color: #999; }
+.order .tt { font-weight: 600; margin: 2px 0; }
+
+.timeline { list-style: none; margin-top: 8px; }
+.timeline li { position: relative; padding: 0 0 16px 20px; border-left: 2px solid #f0d9bd; }
+.timeline li:last-child { border-left-color: transparent; }
+.timeline li::before {
+  content: ""; position: absolute; left: -6px; top: 2px; width: 10px; height: 10px;
+  border-radius: 50%; background: #e8722a;
+}
+.timeline .tm { font-size: 12px; color: #aaa; }
+.pod-img { width: 110px; height: 110px; border-radius: 8px; object-fit: cover; margin: 4px 6px 0 0; border: 1px solid #eee; }
+.pod-card { background: #fffaf2; border: 1px solid #f0d9bd; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+.relay { font-style: italic; color: #7a5a3a; margin-top: 6px; font-size: 14px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #f0e6d6; }
+th { color: #997a5f; font-weight: 600; }
+
+#toast {
+  position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%);
+  background: #333; color: #fff; padding: 10px 22px; border-radius: 20px;
+  font-size: 14px; opacity: 0; transition: .3s; pointer-events: none; z-index: 99;
+}
+#toast.show { opacity: .92; }
+#toast.err { background: #c0392b; }
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none;
+  align-items: flex-start; justify-content: center; z-index: 50; overflow: auto; padding: 40px 16px;
+}
+.modal-bg.show { display: flex; }
+.modal { background: #fff; border-radius: 14px; padding: 22px; max-width: 560px; width: 100%; }
+.hint { font-size: 12px; color: #b09a7c; margin-top: 8px; line-height: 1.7; }
+.chk { display: inline-flex; align-items: center; gap: 4px; margin-right: 14px; font-size: 13px; }
+.chk input { width: auto; }

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>乡村到村送 · 站点端</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header>
+  <div class="logo">🏡 乡村到村送 · 站点端</div>
+  <a href="index.html">子女端</a>
+  <a href="station.html" class="on">站点端</a>
+  <a href="admin.html">运营端</a>
+</header>
+<main>
+  <div class="card">
+    <h3>当前站点（演示用，正式版由站长扫码登录绑定）</h3>
+    <select id="station" onchange="render()"></select>
+    <p class="hint" id="stHint"></p>
+  </div>
+
+  <!-- 入库扫描 -->
+  <div class="card">
+    <h3>📥 入库扫描（按运单号，自动推进状态：县→AT_COUNTY 镇→AT_TOWN 村→派送中）</h3>
+    <div class="row">
+      <div><label>运单号</label><input id="inNo" value="WB2" placeholder="如 WB2"></div>
+      <div style="display:flex;align-items:flex-end"><button onclick="inbound()">入库</button></div>
+    </div>
+  </div>
+
+  <!-- 班线发运 -->
+  <div class="card">
+    <h3>🚌 班线装车发运（定时班车，成本摊薄的关键）</h3>
+    <div class="row">
+      <div><label>运单号</label><input id="dpNo" placeholder="如 WB2"></div>
+      <div><label>搭乘班线</label><select id="route"></select></div>
+    </div>
+    <button onclick="dispatch()">确认装车发运</button>
+  </div>
+
+  <!-- 签收拍照回传 -->
+  <div class="card" style="border:2px solid #e8b45c">
+    <h3>📸 签收拍照回传（核心差异化：爸妈签收瞬间，照片/视频回传城里子女）</h3>
+    <div class="row">
+      <div><label>运单号</label><input id="podNo" placeholder="如 WB2"></div>
+      <div><label>签收人</label><input id="signed" value="李大爷"></div>
+    </div>
+    <label>语音转述（老人的话，转成文字给子女看）</label>
+    <input id="relay" value="东西收到啦, 都齐全, 别惦记">
+    <label>现场照片（MVP 用占位图模拟拍摄）</label>
+    <label class="chk"><input type="checkbox" class="ph" value="img/pod1.svg" checked> 手持包裹照</label>
+    <label class="chk"><input type="checkbox" class="ph" value="img/pod2.svg" checked> 货物清点照</label>
+    <button onclick="uploadPod()">上传签收，回传子女 📷</button>
+  </div>
+
+  <!-- 上行收件 -->
+  <div class="card" style="border:2px solid #8fbf6a">
+    <h3>🌽 农产品上行收件（返程不空跑：村民交寄，县城转全网发往城市）</h3>
+    <div class="row">
+      <div><label>交寄村民</label><input id="aName" value="李大爷"></div>
+      <div><label>村民电话</label><input id="aPhone" value="13900000002"></div>
+    </div>
+    <label>农产品描述</label><input id="aDesc" value="土蜂蜜2罐 + 干笋3斤">
+    <div class="row">
+      <div><label>称重(kg)</label><input id="aWeight" type="number" value="4"></div>
+      <div><label>收购估值(元)</label><input id="aGoods" type="number" value="180"></div>
+    </div>
+    <div class="row">
+      <div><label>上行运费(元)</label><input id="aFreight" type="number" value="12"></div>
+      <div><label>发往目的地(收货方)</label><input id="aRecv" value="深圳市南山区收货人"></div>
+    </div>
+    <button onclick="agri()">收件登记（需选择村级站点）</button>
+  </div>
+</main>
+<div id="toast"></div>
+
+<script>
+let stations = [];
+function toast(m, err){ const t=document.getElementById('toast'); t.textContent=m;
+  t.className='show'+(err?' err':''); setTimeout(()=>t.className='',2500); }
+async function api(path, opt){
+  const r = await fetch(path, Object.assign({headers:{'Content-Type':'application/json'}}, opt));
+  const j = await r.json();
+  if(j.code!==0){ toast(j.msg, true); throw new Error(j.msg); }
+  return j.data;
+}
+async function init(){
+  stations = await api('/api/stations');
+  station.innerHTML = stations.map(s=>`<option value="${s.id}">[${{COUNTY:'县集散',TOWN:'乡镇hub',VILLAGE:'村站'}[s.type]}] ${s.name}</option>`).join('');
+  station.value = 4;
+  const rs = await api('/api/routes');
+  route.innerHTML = rs.map(r=>`<option value="${r.id}">${r.name}（${r.stationChain}）</option>`).join('');
+  render();
+}
+function render(){
+  const s = stations.find(x=>String(x.id)===station.value);
+  stHint.textContent = `负责人 ${s.contact} ｜ 地址 ${s.address} ｜ 入库后动作: ${{COUNTY:'验货分拣→装北线/南线班车',TOWN:'乡镇分拣→村站派送',VILLAGE:'入库→上门派送→签收拍照'}[s.type]}`;
+}
+function curNo(id){ if(!document.getElementById(id).value) { toast('请填写运单号', true); throw 0; } return document.getElementById(id).value; }
+
+async function inbound(){
+  const d = await api(`/api/stations/${station.value}/inbound`,
+    {method:'POST', body: JSON.stringify({waybillNo: curNo('inNo')})});
+  toast(`入库成功: ${d.waybillNo} → ${d.next}`);
+}
+async function dispatch(){
+  await api(`/api/waybills/${curNo('dpNo')}/dispatch`,
+    {method:'POST', body: JSON.stringify({routeId: Number(route.value), stationId: Number(station.value)})});
+  toast('已装车发运，轨迹已更新');
+}
+async function uploadPod(){
+  const photos = [...document.querySelectorAll('.ph:checked')].map(c=>c.value);
+  if(!photos.length){ toast('至少勾选一张现场照片', true); return; }
+  await api(`/api/orders/${curNo('podNo')}/pod`,
+    {method:'POST', body: JSON.stringify({photos, signedName: signed.value, relayText: relay.value})});
+  toast('签收成功！照片已回传子女「送达朋友圈」');
+}
+async function agri(){
+  const s = stations.find(x=>String(x.id)===station.value);
+  if(s.type!=='VILLAGE'){ toast('上行收件请在村级站点操作', true); return; }
+  const o = await api(`/api/stations/${station.value}/agri-receive`, {method:'POST', body: JSON.stringify({
+    senderName: aName.value, senderPhone: aPhone.value,
+    receiverName: aRecv.value, receiverStationId: Number(station.value),
+    itemDesc: aDesc.value, weight: Number(aWeight.value),
+    goodsAmount: Number(aGoods.value), freight: Number(aFreight.value) })});
+  toast(`上行收件成功 订单${o.orderNo} / 运单WB${o.id}，将随班车发往县集散`);
+}
+init();
+</script>
+</body>
+</html>

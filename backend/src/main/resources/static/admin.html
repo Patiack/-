@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>乡村到村送 · 运营端</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header>
+  <div class="logo">📊 乡村到村送 · 县域运营端</div>
+  <a href="index.html">子女端</a>
+  <a href="station.html">站点端</a>
+  <a href="admin.html" class="on">运营端</a>
+</header>
+<main>
+  <div class="card">
+    <h3>今日经营看板</h3>
+    <div class="grid" id="stats">加载中...</div>
+    <p class="hint">💡 单位经济模型盯两个数：下行单量密度（摊薄班车成本）与上行单毛利（真正的利润来源）。</p>
+  </div>
+
+  <div class="card">
+    <h3>定时班线（县集散 → 乡镇hub → 村站）</h3>
+    <table id="routes"><tr><td>加载中...</td></tr></table>
+  </div>
+
+  <div class="card">
+    <h3>班次管理</h3>
+    <table id="schedules"><tr><td>加载中...</td></tr></table>
+    <div class="row" style="margin-top:14px">
+      <div><label>新增班次 - 班线</label><select id="rSel"></select></div>
+      <div><label>车牌</label><input id="bus" value="云L·99new"></div>
+    </div>
+    <div class="row">
+      <div><label>发车时间</label><input id="dt" type="datetime-local"></div>
+      <div><label>舱位(单)</label><input id="cap" type="number" value="200"></div>
+    </div>
+    <button onclick="addSchedule()">排班</button>
+  </div>
+</main>
+<div id="toast"></div>
+
+<script>
+function toast(m, err){ const t=document.getElementById('toast'); t.textContent=m;
+  t.className='show'+(err?' err':''); setTimeout(()=>t.className='',2200); }
+async function api(path, opt){
+  const r = await fetch(path, Object.assign({headers:{'Content-Type':'application/json'}}, opt));
+  const j = await r.json();
+  if(j.code!==0){ toast(j.msg, true); throw new Error(j.msg); }
+  return j.data;
+}
+async function loadStats(){
+  const d = await api('/api/stats');
+  const items = [['今日总单',d.todayOrders],['今日下行件',d.todayDownOrders],['今日上行农产品',d.todayAgriOrders],
+    ['在途',d.inTransit],['今日已签收',d.signedToday],['签收回执',d.podCount],
+    ['站点数',d.stationCount],['班线数',d.routeCount],['今日班次',d.todaySchedules],['累计订单',d.totalOrders]];
+  stats.innerHTML = items.map(x=>`<div class="stat"><b>${x[1]}</b><span>${x[0]}</span></div>`).join('');
+}
+async function loadRoutes(){
+  const rs = await api('/api/routes');
+  routes.innerHTML = '<tr><th>班线</th><th>站点链</th><th>说明</th></tr>' +
+    rs.map(r=>`<tr><td><b>${r.name}</b></td><td>${r.stationChain}</td><td>${r.description||''}</td></tr>`).join('');
+  rSel.innerHTML = rs.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+}
+async function loadSchedules(){
+  const list = await api('/api/schedules');
+  schedules.innerHTML = '<tr><th>发车时间</th><th>班线</th><th>车牌</th><th>舱位</th><th>状态</th></tr>' +
+    (list.length? list.map(x=>`<tr><td>${x.schedule.departTime}</td><td>${x.routeName}</td>
+      <td>${x.schedule.busNo}</td><td>${x.schedule.capacity}</td>
+      <td><span class="badge ${{FINISHED:'CHECKED',RUNNING:'TRANSIT'}[x.schedule.status]||''}">${x.schedule.status}</span></td></tr>`).join('')
+      : '<tr><td colspan="5">今日暂无班次（可演示新增排班）</td></tr>');
+}
+async function addSchedule(){
+  if(!dt.value){ toast('请选择发车时间', true); return; }
+  await api('/api/schedules',{method:'POST',body: JSON.stringify({
+    routeId: Number(rSel.value), busNo: bus.value,
+    departTime: dt.value.replace('T',' ') + ':00', capacity: Number(cap.value)})});
+  toast('排班成功'); loadSchedules(); loadStats();
+}
+loadStats(); loadRoutes(); loadSchedules();
+setInterval(loadStats, 15000);
+</script>
+</body>
+</html>

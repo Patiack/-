@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+  <rect width="400" height="400" fill="#8fbf6a"/>
+  <rect x="30" y="40" width="340" height="230" rx="12" fill="#f5e9c9"/>
+  <circle cx="150" cy="150" r="42" fill="#e8b87f"/>
+  <path d="M110 230 q40 -45 80 0 z" fill="#5a7247"/>
+  <rect x="215" y="160" width="105" height="75" rx="8" fill="#c97b3d"/>
+  <rect x="215" y="160" width="105" height="24" fill="#a95f28"/>
+  <text x="200" y="320" font-size="22" text-anchor="middle" fill="#fff" font-family="sans-serif">签收现场照片 1</text>
+  <text x="200" y="352" font-size="15" text-anchor="middle" fill="#eaf5df" font-family="sans-serif">李大爷手持包裹 · 大湾址村</text>
+</svg>
